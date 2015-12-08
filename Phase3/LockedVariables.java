@@ -22,6 +22,7 @@ public class LockedVariables{
 	PriorityQueue<Index_count> toDownload;
 	int uploaded;
 	int downloaded;
+	int trackerState;
 	int left;
 	private Stack<Integer> updated;
 	int piece_size;	
@@ -41,7 +42,10 @@ public class LockedVariables{
 		piece_size = torrent_info.piece_length;	
 		file_size = torrent_info.file_length;
 		this.piece_hashes = torrent_info.piece_hashes;
-	}	
+	}
+	public boolean needMore(){
+		return left == 0;
+	}
 
 	public int getFileIndex(){
 		if (!updated.empty()){

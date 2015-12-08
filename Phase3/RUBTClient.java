@@ -1,14 +1,12 @@
 import java.io.*;
 import java.net.*;
 import java.util.Random;
-import java.util.Scanner;
 import java.util.Arrays;
 import java.lang.Object;
 import java.lang.Thread;
 
 import GivenTools.Bencoder2;
 import GivenTools.BencodingException;
-import GivenTools.ToolKit;
 import GivenTools.TorrentInfo;
 
 public class RUBTClient {
@@ -124,9 +122,12 @@ public class RUBTClient {
 		
 		LockedVariables var = new LockedVariables(torrentInfo);
 		FileHandler handler = new FileHandler(outFile, var);
+		UploadServer server = new UploadServer(torrentInfo, pID, var);
 		Thread h = new Thread(handler);
+		Thread s = new Thread(server);
 		try{
 			h.start();
+			s.start();
 		} catch (Exception e){
 			e.printStackTrace();
 		}
@@ -143,13 +144,21 @@ public class RUBTClient {
 				    rc.printHelp();
 				    continue;
 				} else if (input.equals("pause")) {
+					//interrupt all threads
 					if (h.isAlive()){
 						h.interrupt();
 					}
+					if (s.isAlive()){
+						s.interrupt();
+					}
+					//join all threads
 					h.join();
+					s.join();
 				} else if (input.equals("resume")){
 					h = new Thread(handler);
 					h.start();
+					s = new Thread(server);
+					s.start();
 				}
 		    } catch (IllegalArgumentException e) {
 		    	System.out.println(e);
@@ -158,12 +167,18 @@ public class RUBTClient {
 				e.printStackTrace();
 			}
 		} while (true);
+		///interrupt all threads;
 		if (h.isAlive()){
 			if (debug) System.out.println("Inturrupting Handler");
 			 h.interrupt();
 		}
+		if (s.isAlive()){
+			s.interrupt();
+		}
+		//join all threads
 		try {
 			h.join();
+			s.join();
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

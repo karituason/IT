@@ -5,7 +5,7 @@ import java.util.StringTokenizer;
 public class FileHandler implements Runnable{
 	boolean debug = false;
 	boolean debug2 = true;
-	private LockedVariables var;
+	private volatile LockedVariables var;
 	private String filename;
 	private String tempFilename;
 	private RandomAccessFile outfile = null;
@@ -36,9 +36,9 @@ public class FileHandler implements Runnable{
 			}
 			
 			if (already_exists){
-				if (debug) System.out.println(name + " Exists");
+				if (debug2) System.out.println(name + " Exists");
 			} else {
-				if (debug) System.out.println(tempFilename + " doesn't exist");
+				if (debug2) System.out.println(tempFilename + " doesn't exist");
 			}
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -47,12 +47,13 @@ public class FileHandler implements Runnable{
 		PrintWriter pout = null;
 		try {
 			outfile = new RandomAccessFile(filename, "rws");
+			if (debug2) System.out.println("opened outfile");
 			if (already_exists){
 				pout = new PrintWriter(new BufferedWriter(new FileWriter(tempFilename, true)));
-				if (debug) System.out.println("append");
+				if (debug2) System.out.println("append");
 			} else {
 				pout = new PrintWriter(new BufferedWriter(new FileWriter(tempFilename, false)));
-				if (debug) System.out.println("overwrite");
+				if (debug2) System.out.println("overwrite");
 			}
 			if (debug) System.out.println("put in pout");
 		} catch (Exception e){
@@ -67,6 +68,11 @@ public class FileHandler implements Runnable{
 			}
 			
 			while (!completed){
+				if (Thread.interrupted()){
+					if (debug2) System.out.println(name + ": interrupted");
+					completed = true;
+					continue;
+				}
 				if (debug) System.out.println(name + ":waiting on var");
 				synchronized(var){
 					if (debug) System.out.println(name + ": have var");
@@ -92,10 +98,6 @@ public class FileHandler implements Runnable{
 							e.printStackTrace();
 						}
 					}
-					if (Thread.interrupted()){
-						if (debug2) System.out.println(name + ": interrupted");
-						completed = true;
-					}
 				}
 			}
 			try {
@@ -103,7 +105,7 @@ public class FileHandler implements Runnable{
 				outfile.close();
 				pout.close();
 			} catch (Exception e){
-				//
+				System.out.println("files were already closed");
 			}
 			System.out.println("Closing File Handler");
 			
@@ -159,7 +161,6 @@ public class FileHandler implements Runnable{
 						}
 						outfile.seek(index * piece_size);
 						outfile.readFully(piece);
-						var.downloaded += piece.length;
 						var.left -= piece.length;
 					}
 				}
