@@ -8,8 +8,8 @@ public class DownloadPeerMaker implements Runnable{
 	byte[] peer_id;
 	TorrentInfo torrent_info;
 	volatile TrackerCom.PeerList peers;
-	ArrayList<PeerInfo> usedPeers;
-	ArrayList<PeerInfo> livePeers;
+	ArrayList<String> usedPeers;
+	ArrayList<String> livePeers;
 	ArrayList<Thread> peerThreads;
 	volatile LockedVariables var;
 	class PeerStack{
@@ -25,8 +25,8 @@ public class DownloadPeerMaker implements Runnable{
 		this.torrent_info = torrent_info;
 		this.peers = peers;
 		this.var = var;
-		usedPeers = new ArrayList<PeerInfo>();
-		livePeers = new ArrayList<PeerInfo>();
+		usedPeers = new ArrayList<String>();
+		livePeers = new ArrayList<String>();
 		peerThreads = new ArrayList<Thread>();
 		closed = new PeerStack();
 	}
@@ -40,24 +40,20 @@ public class DownloadPeerMaker implements Runnable{
 		while (running){
 			//create peerDownload threads
 			if (Thread.interrupted()){
+				System.out.println ("Download Maker Interrupted");
 				running = false;
 				continue;
 			}
 			synchronized (closed){
 				while (!closed.closed_peers.isEmpty()){
 					PeerInfo cp = closed.closed_peers.pop();
-					Thread tmp = peerThreads.get(livePeers.indexOf(cp));
+					Thread tmp = peerThreads.get(livePeers.indexOf(cp.toString()));
 					peerThreads.remove(tmp);
-					livePeers.remove(cp);
-					usedPeers.add(cp);
+					livePeers.remove(cp.toString());
+					//System.out.println(livePeers.size());
+					usedPeers.add(cp.toString());
 					if (tmp.isAlive()){
 						tmp.interrupt();
-					}
-					try {
-						tmp.join();
-					} catch (InterruptedException e) {
-						// TODO Auto-generated catch block
-						running = false;
 					}
 				}
 			}
@@ -81,10 +77,11 @@ public class DownloadPeerMaker implements Runnable{
 				synchronized(peers){
 					for (int i1 = 0; i1 < peers.peerList.size(); i1++){
 						peer = peers.peerList.get(i1);
-						if (livePeers.contains(peer) || (usedPeers.contains(peer))){
+						if (livePeers.contains(peer.toString()) || (usedPeers.contains(peer.toString()))){
 							peer = null;
 						} else {
-							livePeers.add(peer);
+							livePeers.add(peer.toString());
+							break;
 						}
 					}
 				}
@@ -97,7 +94,6 @@ public class DownloadPeerMaker implements Runnable{
 			}
 		}
 		for (int k = 0; k < peerThreads.size(); k++){
-			System.out.println("Interrupting peer " + livePeers.get(k).ip);
 			if (peerThreads.get(k).isAlive()){
 				peerThreads.get(k).interrupt();
 			}
@@ -105,3 +101,4 @@ public class DownloadPeerMaker implements Runnable{
 		System.out.println("Download maker Closing");
 	}
 }
+

@@ -1,10 +1,10 @@
 public class RUBTConstants{
 	
 	/*number of download peers allowed*/
-	public static final int download_pool = 5;
+	public static final int download_pool = 10;
 
 	/*number of upload peers allowed*/
-	public static final int upload_pool = 5;
+	public static final int upload_pool = 10;
 	
 	public static final String[] accepted_upload_peers = {"128.6.171.132", "128.6.171.131", "128.6.171.130"};
 	

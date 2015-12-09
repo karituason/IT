@@ -18,6 +18,7 @@ public class UploadServer implements Runnable {
 	volatile LockedVariables var;
 	Thread tracker;
 	ArrayList<Thread> peers;
+	boolean debug = true;
 	
 	public UploadServer(TorrentInfo torrent_info, byte[] peer_id, LockedVariables var){
 		this.torrent_info = torrent_info;
@@ -57,10 +58,10 @@ public class UploadServer implements Runnable {
 				//create a new upload thread
 				
 				if (peers.size() < RUBTConstants.upload_pool){
-					System.out.println(name + "waiting for accept");
+					if (debug) System.out.println(name + " waiting for accept");
 					Socket socket = s.accept();
 					PeerUpload peerup = new PeerUpload(socket, peer_id, torrent_info, var);
-					System.out.println("Got accept");
+					if (debug) System.out.println("Got accept");
 					Thread pUp = new Thread(peerup);
 					pUp.start();
 					peers.add(pUp);

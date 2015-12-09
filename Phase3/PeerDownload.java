@@ -14,7 +14,7 @@ import GivenTools.TorrentInfo;
 public class PeerDownload implements Runnable{
 	LockedVariables var;
 	boolean debug = false;
-	boolean debug2 = false;
+	boolean debug2 = true;
 	private byte[] peer_id;
 	private Socket sock = null;
 	private DataOutputStream dout = null;
@@ -43,9 +43,11 @@ public class PeerDownload implements Runnable{
 	public void run() {
 		// TODO Auto-generated method stub
 		boolean go = false;
+		boolean start = false;
 		try{
 			if (this.openSocket() == 1 && this.shakeHands() == 1){
 				System.out.println("Starting "+ name);
+				start = true;
 				while (!go){
 					synchronized(var){
 						if (var.filed){
@@ -73,7 +75,7 @@ public class PeerDownload implements Runnable{
 		synchronized(stack){
 			stack.closed_peers.push(peer);
 		}
-		System.out.println("Closing " + name);
+		if (start) System.out.println("Closing " + name);
 	}
 	
 	private int openSocket(){
@@ -112,7 +114,7 @@ public class PeerDownload implements Runnable{
 			if (debug) System.out.println(new String(hash));
 			if (debug) System.out.println(new String(torrent_info.info_hash.array()));
 			if (Arrays.equals(torrent_info.info_hash.array(), hash) && Arrays.equals(peer.PID, their_id)){
-				if(debug2) System.out.println(name + ": leaving handshake");
+				if(debug) System.out.println(name + ": leaving handshake");
 				return 1;
 			} else {
 				if(debug) System.out.println(name + ": bad handshake");

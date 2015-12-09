@@ -20,16 +20,17 @@ public class PeerUpload implements Runnable{
 	volatile LockedVariables var;
 	private byte[] peer_id;
 	private String name;
-	boolean debug = true;
+	boolean debug = false;
 	private int[] bitfield;
 	Stack<Integer> new_pieces;
+	private boolean debug2 = true;
 	
 	public PeerUpload(Socket sock, byte[] peer_id, TorrentInfo torrent_info, LockedVariables var){
 		this.sock = sock;
 		this.peer_id = peer_id;
 		this.torrent_info = torrent_info;
 		this.var = var;
-		this.name = "PeerUpload" + sock.getInetAddress().getHostAddress();
+		this.name = "PeerUpload[" + sock.getInetAddress().getHostAddress()+"]";
 		bitfield = new int[(int)Math.ceil(1.0 * torrent_info.file_length/torrent_info.piece_length)];
 		new_pieces = new Stack<Integer>();
 	}
@@ -52,14 +53,14 @@ public class PeerUpload implements Runnable{
 			try {
 				sendHavePieces();
 				waitForInterested();
-				System.out.println("got interested");
+				if (debug) System.out.println("got interested");
 				sendUnchoke();
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
-				if (debug) System.out.println("Exception While sending have messages");
+				if (debug2) System.out.println("Exception While sending have messages");
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
-				if (debug) System.out.println("Exception sent wrong message");
+				if (debug2) System.out.println("Exception sent wrong message");
 			}
 			boolean running = true;
 			while (running){
@@ -90,33 +91,38 @@ public class PeerUpload implements Runnable{
 	private void getRequest() throws Exception{
 		byte[] message = getMessage();
 		String translation = P2PMessage.translateMessage(message);
-		System.out.println(translation);
+		if (debug) System.out.println(translation);
+		if (message.length == 0) return;
 		byte msgID = message[0];
 		if (msgID == (byte)6){
-			System.out.println("here");
+			if (debug) System.out.println("here");
 			int index = P2PMessage.getInt(Arrays.copyOfRange(message, 1, 5));
 			int begin = P2PMessage.getInt(Arrays.copyOfRange(message, 5, 9));
 			int length = P2PMessage.getInt(Arrays.copyOfRange(message, 9, 13));
-			System.out.println(index+ " "+  begin +" "+ length);
-			System.out.println(bitfield[index]);
+			if (debug) System.out.println(index+ " "+  begin +" "+ length);
+			if (debug) System.out.println(bitfield[index]);
 			if (bitfield[index] == 1){
-				System.out.println (bitfield[index]);
+				if (debug) System.out.println (bitfield[index]);
 				synchronized (var){
-					System.out.println("have var");
+					if (debug) System.out.println("have var");
 					byte[] tmp = var.pieces[index];
-					if (tmp == null) System.out.println("null");
-					System.out.println(tmp.length);
+					if (tmp == null) if (debug) System.out.println("null");
+					if (debug) System.out.println(tmp.length);
 					if (tmp != null && tmp.length >= (length+begin)){
 						byte[] block = Arrays.copyOfRange(tmp, begin, begin + length);
-						var.left += length;
+						var.uploaded += length;
 						message = P2PMessage.getMessage(index, begin, block);
-						System.out.println(P2PMessage.translateMessage(Arrays.copyOfRange(message, 4, length + 9)));
-						System.out.println("Sending message" + message.length);
+						if (debug) System.out.println(P2PMessage.translateMessage(Arrays.copyOfRange(message, 4, length + 9)));
+						if (debug2 ) System.out.println(name +": Sending block " + index);
 						sendMessage(message);
 					}
 				}
 			}
+		} else if (msgID == P2PMessage.P2P_HAVE){
+			byte[] msg = P2PMessage.getMessage(P2PMessage.P2P_UNINTERESTED);
+			sendMessage(msg);
 		} else {
+		
 			throw new IOException("wrong message");
 		}
 	}
@@ -126,23 +132,27 @@ public class PeerUpload implements Runnable{
 		sendMessage(message);
 	}
 	
-	private void waitForInterested() throws InterruptedException{
-		System.out.println("Waiting for Interested");
+	private void waitForInterested() throws InterruptedException, IOException{
+		if (debug) System.out.println("Waiting for Interested");
 		boolean interested = false;
 		boolean notinterested = false;
 		while (!interested){
 			byte[] response_message = getMessage();
+			if (response_message.length == 0) continue;
 			byte msgID = response_message[0];
 			if (msgID == (byte)2){
-				System.out.println("here");
+				if (debug) System.out.println("here");
 				interested = true;
 				notinterested = false;
 				//send unchoke
 			} else if (msgID == (byte)3){
 				notinterested = true;
 				interested = true;
+			} else if (msgID == P2PMessage.P2P_BITFIELD || msgID == P2PMessage.P2P_HAVE){
+				byte[] msg = P2PMessage.getMessage(P2PMessage.P2P_UNINTERESTED);
+				sendMessage(msg);
 			} else {
-				System.out.println("here2");
+				if (debug) System.out.println("here2");
 				interested = true;
 				notinterested = true;
 			}
@@ -150,12 +160,12 @@ public class PeerUpload implements Runnable{
 		if (notinterested){
 			throw new InterruptedException("wrong message");
 		} else {
-			System.out.println("interested");
+			if (debug) System.out.println("interested");
 		}
 	}
 	
 	private byte[] getMessage() throws InterruptedException{
-		System.out.println("in getMessage");
+		if (debug) System.out.println("in getMessage");
 		byte[] prefix = new byte[4];
 		byte[] response_message = null;
 		try{
@@ -173,8 +183,8 @@ public class PeerUpload implements Runnable{
 		} catch (Exception e){
 			throw new InterruptedException("in get Message");
 		}
-		System.out.println("leaving get Message");
-		System.out.println(P2PMessage.translateMessage(response_message));
+		if (debug) System.out.println("leaving get Message");
+		if (debug) System.out.println(P2PMessage.translateMessage(response_message));
 		return response_message;
 	}
 	
