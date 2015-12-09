@@ -1,14 +1,14 @@
 public class RUBTConstants{
 	
 	/*number of download peers allowed*/
-	public static final int download_pool = 2;
+	public static final int download_pool = 5;
 
 	/*number of upload peers allowed*/
 	public static final int upload_pool = 1;
 	
 	public static final String[] accepted_upload_peers = {"128.6.171.132", "128.6.171.131", "128.6.171.130"};
 	
-	public static final String[] accepted_download_peers = {"128.6.171.130", "128.6.171.131", "128.6.171.132"};
+	public static final String[] accepted_download_peers = {"128.6.171.132", "128.6.171.131", "128.6.171.130"};
 	
 	/*number of seconds socket method timeout is*/
 	public static final int timeout_interval = 120000;

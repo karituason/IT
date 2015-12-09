@@ -136,6 +136,6 @@ public class ResponseInfo{
 				}
 			}
 		}
-		return accepted_peers;
+		return peers;
 	}
 }

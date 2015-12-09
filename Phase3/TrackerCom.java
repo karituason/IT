@@ -38,6 +38,8 @@ public class TrackerCom implements Runnable{
 	private boolean willDownload = true;
 	private boolean running = true;
 	private String name = "Tracker Com";
+	private DownloadPeerMaker dpm;
+	private Thread downloader;
 	
 	public TrackerCom(TorrentInfo torrent_info, byte[] peer_id, LockedVariables var, int port){
 		this.torrent_info = torrent_info;
@@ -50,6 +52,14 @@ public class TrackerCom implements Runnable{
 	}
 	public void run(){
 		if (debug) System.out.println(name +": starting");
+		boolean go = false;
+		while (!go){
+			synchronized(var){
+				if (var.filed){
+					go = true;
+				}
+			}
+		}
 		synchronized (var){
 			if (var.left == 0){
 				willDownload = false;
@@ -64,7 +74,9 @@ public class TrackerCom implements Runnable{
 			min_interval = parsedResponse.min_interval;
 			synchronized (peerList){
 				peerList.peerList = parsedResponse.getPeers();
-				//create download thread maker;
+				dpm = new DownloadPeerMaker(torrent_info, peerList, var, peer_id);
+				downloader = new Thread(dpm);
+				downloader.start();
 			}
 		} catch (BencodingException e) {
 			// TODO Auto-generated catch block
@@ -110,7 +122,16 @@ public class TrackerCom implements Runnable{
 		url = getFullURL(event);
 		response = hTTPResponseFromGet(url);
 		//interrupt all threads created by this thread
+		if (downloader.isAlive()){
+			downloader.interrupt();
+		}
 		//join all threads created by this thread
+		try {
+			downloader.join();
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		System.out.println("Closing Tracker Com");
 	}
 	

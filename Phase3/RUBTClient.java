@@ -157,6 +157,7 @@ public class RUBTClient {
 				} else if (input.equals("resume")){
 					h = new Thread(handler);
 					h.start();
+					server = new UploadServer(torrentInfo, pID, var);
 					s = new Thread(server);
 					s.start();
 				}

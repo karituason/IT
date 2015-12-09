@@ -26,10 +26,18 @@ public class FileHandler implements Runnable{
 	@Override
 	public void run() {
 		// TODO Auto-generated method stub
+		boolean first = true;
+		boolean completed = false;
 		if (debug || debug2) System.out.println(name + " starting");
 		boolean already_exists = false;
 		try {
 			already_exists = fileExists();
+			synchronized(var){
+				var.filed = true;
+				if (var.left == 0){
+					completed = true;
+				}
+			}
 			if (Thread.interrupted()){
 				if (debug2) System.out.println(name +": interrupted");
 				return;
@@ -45,6 +53,7 @@ public class FileHandler implements Runnable{
 			e.printStackTrace();
 		}
 		PrintWriter pout = null;
+		if (! completed){
 		try {
 			outfile = new RandomAccessFile(filename, "rws");
 			if (debug2) System.out.println("opened outfile");
@@ -59,9 +68,7 @@ public class FileHandler implements Runnable{
 		} catch (Exception e){
 			e.printStackTrace();
 		}
-		
 		if (pout != null && outfile != null){
-			boolean completed = false;
 			if (Thread.interrupted()){
 				if (debug2) System.out.println(name + ": interrupted");
 				completed = true;
@@ -93,7 +100,12 @@ public class FileHandler implements Runnable{
 							}
 							outfile.seek(index * var.piece_size);
 							outfile.write(piece);
-							pout.print("" + index);	
+							if (!already_exists && first){
+								pout.print("" + index);
+								first = false;
+							} else {
+								pout.println(" " + index);
+							}
 						} catch(IOException e){
 							e.printStackTrace();
 						}
@@ -107,9 +119,10 @@ public class FileHandler implements Runnable{
 			} catch (Exception e){
 				System.out.println("files were already closed");
 			}
+		}
+		}
 			System.out.println("Closing File Handler");
 			
-		}
 	}
 	
 	public boolean fileExists() throws IOException{

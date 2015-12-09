@@ -50,4 +50,9 @@ public class PeerInfo{
 		this.port = port;
 
 	}
+	
+	public String toString(){
+		String ret = ip + ": id = " + PID.toString() + ", port = " + port;
+		return ret;
+	}
 }

@@ -14,7 +14,7 @@ public class LockedVariables{
 			this.count = count;
 		}		
 	}
-	
+	boolean filed;
 	boolean debug = false;
 	byte[][] pieces;
 	int[] piece_status; //0 = don't have; 1 = have;
@@ -42,9 +42,7 @@ public class LockedVariables{
 		piece_size = torrent_info.piece_length;	
 		file_size = torrent_info.file_length;
 		this.piece_hashes = torrent_info.piece_hashes;
-	}
-	public boolean needMore(){
-		return left == 0;
+		filed = false;
 	}
 
 	public int getFileIndex(){
