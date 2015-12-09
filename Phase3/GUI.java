@@ -51,8 +51,7 @@ public class GUI extends JFrame
 		
 	}
 	
-	public class ExitButtonHandler implements ActionListener
-	{
+	public class ExitButtonHandler implements ActionListener	{
 			public void actionPerformed(ActionEvent e){
 				System.exit(0);
 			}
