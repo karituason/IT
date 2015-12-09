@@ -1,0 +1,55 @@
+Atif Siddiqi - 145000447
+Karissa Tuason - 140004884
+Daniel Chun - 127006919
+12/9/2015
+
+Phase 3 Write-up:
+
+This was the final phase in our BitTorrent project. Sections of code that we had previously submitted 
+in Phase 1 and Phase 2 required a deep review and, in some cases, an overhaul. 
+
+Our program's main class is RUBTClient. This class is in charge of our key facilitating information
+that our threads access. This class first calls for information from parts of the program, including our tracker, parses 
+the file torrent, and then sends a request to the tracker. This class then sets up threads to manage connections between peers.
+From then, our PeerUpload and PeerDownload communicate with other components of the program. They listen to incoming requests about
+pertinent information, then open up other threads to send the information request. The main then creates communicates about adjustments
+in another, created thread within the interval alloted for response. The program then waits for user input to exit.
+
+Description of classes:
+
+RUBTClient: This was our main class. This class consists of all the necessary procedures to 
+            facilitate key parts of the torrent program. It manages torrent info, converts an 
+            inputted torrent files into a byte array, and accounts for user-inputted errors.
+
+FileHandler: This class manages the given files. After the usual checks for human error, 
+              this class manages the parsing of the file for usage of other components of our program.
+              This part was painstaking, since we had to account for the various conditions that the process 
+              may fall into whilst reading different types of files. 
+
+LockedVariables: This class served as a declaration of variables that the rest of the files 
+              saw fit to use in their processes. This class also declared and established methodsfor
+              with a file index can be utilized.
+
+P2PMessage: This class managed the passing, delivery, and receiving of messages that were 
+            communicated via other parts of the program. It managed chokes, reception of handshakes,
+            messages of different types, and the translation of messages with respect to their format.
+
+PeerDownload: This class is fairly straightforward. It enables the file download process for the peer. 
+              To do this, it accounts for the reception of certain messages to initiate the process.
+
+PeerInfo: This class managed a few error messages that the peer may encounter, such as bad formats for 
+          different objects, issues with extracting IPs, and a basic null/empy message.PeerUpload: This class is 
+          also fairly straightforward, as much as its code was difficult to properly follow at many times during Phase 3. 
+          It enables the file upload process for the peer, accounting for similar critera that PeerDownload considered. 
+
+RUBTConstants: This class initialized and declared the constant variables that were employed by the rest of our program. 
+
+ResponseInfo: This class declared keys for communicating information about the status of other components of our project. 
+
+TrackerCom: This class enabled communication in order to help our tracking of the code throughout the project's development. 
+
+UploadServer: This class managed a socket in the server and enabled it for use for other components of the client. 
+              This class kept track of the different peers that were accessed. 
+
+DownloadPeerMaker: This class was responsible for the management of threads to be utilized in the peer's upload and 
+              download processes. 
