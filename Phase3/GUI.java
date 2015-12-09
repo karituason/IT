@@ -62,5 +62,4 @@ public class GUI extends JFrame
 	{
 			GUI openclient = new GUI();
 	}
-	
 }
