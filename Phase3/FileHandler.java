@@ -35,6 +35,8 @@ public class FileHandler implements Runnable{
 			synchronized(var){
 				var.filed = true;
 				if (var.left == 0){
+					var.end = var.start;
+					System.out.println(var.downloaded + " bytes downloaded in" + (var.end - var.start)/1000000 + " milliseconds");
 					completed = true;
 				}
 			}
@@ -96,6 +98,8 @@ public class FileHandler implements Runnable{
 							var.downloaded += piece.length;
 							var.left -= piece.length;
 							if (var.left == 0){
+								var.end = System.nanoTime();
+								System.out.println(var.downloaded + " bytes downloaded in" + (var.end - var.start)/1000000 + " milliseconds");
 								completed = true;
 							}
 							outfile.seek(index * var.piece_size);
@@ -174,6 +178,7 @@ public class FileHandler implements Runnable{
 						}
 						outfile.seek(index * piece_size);
 						outfile.readFully(piece);
+						var.pieces[index] = piece;
 						var.left -= piece.length;
 					}
 				}

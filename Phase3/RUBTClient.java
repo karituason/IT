@@ -149,7 +149,10 @@ public class RUBTClient {
 						h.interrupt();
 					}
 					if (s.isAlive()){
-						s.interrupt();
+						if (!server.s.isClosed()){
+							server.s.close();
+							s.interrupt();
+						}
 					}
 					//join all threads
 					h.join();
@@ -174,7 +177,14 @@ public class RUBTClient {
 			 h.interrupt();
 		}
 		if (s.isAlive()){
-			s.interrupt();
+			if (!server.s.isClosed()){
+				try {
+					server.s.close();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+				}
+				s.interrupt();
+			}
 		}
 		//join all threads
 		try {

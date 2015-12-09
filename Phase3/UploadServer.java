@@ -1,11 +1,13 @@
 import java.io.IOException;
 import java.net.ServerSocket;
+import java.net.Socket;
+import java.util.ArrayList;
 
 import GivenTools.TorrentInfo;
 
 
 public class UploadServer implements Runnable {
-	ServerSocket s = null;
+	public ServerSocket s = null;
 	int port = 6881;
 	int maxport = 6889;
 	String name = "UploadServer";
@@ -15,11 +17,13 @@ public class UploadServer implements Runnable {
 	TorrentInfo torrent_info;
 	volatile LockedVariables var;
 	Thread tracker;
+	ArrayList<Thread> peers;
 	
 	public UploadServer(TorrentInfo torrent_info, byte[] peer_id, LockedVariables var){
 		this.torrent_info = torrent_info;
 		this.peer_id = peer_id;
 		this.var = var;
+		peers = new ArrayList<Thread>();
 	}
 	//keep track of the number of download peers opened and visited
 	@Override
@@ -31,6 +35,7 @@ public class UploadServer implements Runnable {
 			try {
 				s = new ServerSocket(port);
 				opened = true;
+				break;
 				//start tracker
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
@@ -47,34 +52,53 @@ public class UploadServer implements Runnable {
 				running = false;
 				continue;
 			}
-			/*try {
+			try {
 				//check for upload pool capacity
-				//s.accept();
 				//create a new upload thread
+				
+				if (peers.size() < RUBTConstants.upload_pool){
+					System.out.println(name + "waiting for accept");
+					Socket socket = s.accept();
+					PeerUpload peerup = new PeerUpload(socket, peer_id, torrent_info, var);
+					System.out.println("Got accept");
+					Thread pUp = new Thread(peerup);
+					pUp.start();
+					peers.add(pUp);
+				}
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}*/
+			} catch (Exception e){
+				//
+			}
 		}
 		
 		if (!s.isClosed()){
 			try {
 				s.close();
-				//interrupt all threads
-				if (tracker.isAlive()){
-					tracker.interrupt();
-				}
-				//join all threads
-				tracker.join();
 				
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
-			} catch (InterruptedException e) {
+			} catch (Exception e) {
 				// TODO Auto-generated catch block
-				e.printStackTrace();
+				
 			}
 		}
+		
+		//interrupt all threads
+		if (tracker.isAlive()){
+			tracker.interrupt();
+		}
+		//join all threads
+		try {
+			tracker.join();
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+		}
+		for (int i = 0; i < peers.size(); i++){
+			peers.get(i).interrupt();
+		}
+		
 		System.out.println("Closing Upload Server");
 	}
 }

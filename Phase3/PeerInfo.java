@@ -51,6 +51,9 @@ public class PeerInfo{
 
 	}
 	
+	public boolean equals(PeerInfo p){
+		return (PID.equals(p.PID) && ip.equals(p.ip) && port == p.port);
+	}
 	public String toString(){
 		String ret = ip + ": id = " + PID.toString() + ", port = " + port;
 		return ret;

@@ -80,8 +80,11 @@ public class DownloadPeerMaker implements Runnable{
 				PeerInfo peer = null;
 				synchronized(peers){
 					for (int i1 = 0; i1 < peers.peerList.size(); i1++){
-						if (!livePeers.contains((peer = peers.peerList.get(i1))) && (!usedPeers.contains(peer))){
-							i1 += peers.peerList.size();
+						peer = peers.peerList.get(i1);
+						if (livePeers.contains(peer) || (usedPeers.contains(peer))){
+							peer = null;
+						} else {
+							livePeers.add(peer);
 						}
 					}
 				}
@@ -90,7 +93,6 @@ public class DownloadPeerMaker implements Runnable{
 					Thread t = new Thread(p);
 					t.start();
 					peerThreads.add(t);
-					livePeers.add(peer);
 				}
 			}
 		}

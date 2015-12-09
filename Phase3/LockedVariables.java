@@ -14,6 +14,8 @@ public class LockedVariables{
 			this.count = count;
 		}		
 	}
+	long start;
+	long end;
 	boolean filed;
 	boolean debug = false;
 	byte[][] pieces;
@@ -43,6 +45,7 @@ public class LockedVariables{
 		file_size = torrent_info.file_length;
 		this.piece_hashes = torrent_info.piece_hashes;
 		filed = false;
+		start = System.nanoTime();
 	}
 
 	public int getFileIndex(){
@@ -85,6 +88,10 @@ public class LockedVariables{
 	public void removeIndex(int index){
 		Index_count temp = new Index_count(index, piece_count[index]);
 		toDownload.remove(temp);
+		temp.count--;
+		if (temp.count > 0){
+			toDownload.add(temp);
+		}
 	}
 	
 	Comparator<Index_count> myCompare = new Comparator<Index_count>(){

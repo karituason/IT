@@ -63,7 +63,7 @@ public class P2PMessage{
 	//For piece message
 	public static byte[] getMessage(int index, int begin, byte[] block){
 		byte[] message = new byte[13+block.length];
-		byte[] prefix = getBigEndian(13+block.length);
+		byte[] prefix = getBigEndian(9+block.length);
 		byte[] indexByte = getBigEndian(index);
 		byte[] beginByte = getBigEndian(begin);
 		message[4] = P2P_PIECE;

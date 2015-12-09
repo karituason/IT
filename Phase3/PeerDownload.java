@@ -14,7 +14,7 @@ import GivenTools.TorrentInfo;
 public class PeerDownload implements Runnable{
 	LockedVariables var;
 	boolean debug = false;
-	boolean debug2 = true;
+	boolean debug2 = false;
 	private byte[] peer_id;
 	private Socket sock = null;
 	private DataOutputStream dout = null;
@@ -55,7 +55,6 @@ public class PeerDownload implements Runnable{
 				}
 				if (!Thread.interrupted()){
 					downloadFile();
-					sock.close();
 					synchronized (var){
 						for (int i = 0; i< bitfield.length; i++){
 							if (bitfield[i] == 1){
@@ -63,6 +62,9 @@ public class PeerDownload implements Runnable{
 							}
 						}
 					}
+					sock.close();
+					din.close();
+					dout.close();
 				}
 			}
 		} catch (Exception e) {
@@ -104,7 +106,6 @@ public class PeerDownload implements Runnable{
 			byte[] their_shake = new byte[68];
 			din.readFully(their_shake);
 			if (debug) System.out.println(new String(peer.PID));
-			
 			byte[] hash = Arrays.copyOfRange(their_shake, 28, 48);
 			byte[] their_id = Arrays.copyOfRange(their_shake, 48, 68);
 			if (debug) System.out.println(new String(their_id));
