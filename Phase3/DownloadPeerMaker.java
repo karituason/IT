@@ -1,3 +1,5 @@
+//Atif Siddiqi, Karissa Tuason, Daniel Chunn
+
 import java.util.ArrayList;
 import java.util.Stack;
 
