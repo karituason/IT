@@ -46,7 +46,7 @@ RUBTConstants: This class initialized and declared the constant variables that w
 
 ResponseInfo: This class declared keys for communicating information about the status of other components of our project. 
 
-TrackerCom: This class enabled communication in order to help our tracking of the code throughout the project's development. 
+TrackerCom: This class enabled communication with the tracker in order to communicate with other peers. 
 
 UploadServer: This class managed a socket in the server and enabled it for use for other components of the client. 
               This class kept track of the different peers that were accessed. 
